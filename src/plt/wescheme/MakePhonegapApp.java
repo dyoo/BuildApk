@@ -1,32 +1,45 @@
 package plt.wescheme;
 
-import com.android.jarutils.SignedJarBuilder;
 
 import java.io.InputStream;
-
+import java.io.OutputStream;
+import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 
 
 public class MakePhonegapApp {
     SignedJarBuilder builder;
     DebugKeyProvider keyProvider;
 
-    public MakePhonegapApp(InputStream keyInputStream) {
-	this.keyProvider = new DebugKeyProvider(keyInputStream,
-						null,
-						null);
+    public MakePhonegapApp(InputStream keyInputStream,
+			   OutputStream os) {
+	try {
+	    this.keyProvider = new DebugKeyProvider(keyInputStream,
+						    null,
+						    null);
+	    PrivateKey key = keyProvider.getDebugKey();
+	    X509Certificate certificate = (X509Certificate)keyProvider.getCertificate();
+	    
+	    this.builder = new SignedJarBuilder(os, key, certificate);
+	    
+	} catch (Exception e) {
+	    throw new RuntimeException(e);
+	}
     }
 
-    public void addInputStream(InputString is,
-			       String path) {
+    public void addInputStream(InputStream is, String jarPath) throws IOException {
+	this.builder.writeInputStream(is, jarPath);
     }
 
-    public void addZipInputStream(InputString is) {
+    public void addZipInputStream(InputStream is) throws IOException {
+	this.builder.writeZip(is, null);
     }
 
 
-    // build: OutputStream -> void
-    // Write out the built .apk file
-    public void build(OutputStream os) {
+    // build: -> void
+    // Finalize the building of the .apk file
+    public void build() {
     }
 
 }

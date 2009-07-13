@@ -154,13 +154,32 @@ public class SignedJarBuilder {
             // create the zip entry
             JarEntry entry = new JarEntry(jarPath);
             entry.setTime(inputFile.lastModified());
-
+ 
             writeEntry(fis, entry);
         } finally {
             // close the file stream used to read the file
             fis.close();
         }
     }
+
+
+
+    /**
+     * Writes a new {@link File} into the archive.
+     * @param inputFile the {@link InputStream} to write.
+     * @param jarPath the filepath inside the archive.
+     * @throws IOException
+     */
+    public void writeInputStream(InputStream is, 
+				 String jarPath
+				 /*, long lastModified*/) throws IOException {
+	// create the zip entry
+	JarEntry entry = new JarEntry(jarPath);
+// 	entry.setTime(lastModified);
+	writeEntry(is, entry);
+    }
+
+
 
     /**
      * Copies the content of a Jar/Zip archive into the receiver archive.
