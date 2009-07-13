@@ -8,7 +8,7 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 
-public class MakePhonegapApp {
+public class BuildApk {
     SignedJarBuilder builder;
     DebugKeyProvider keyProvider;
 
