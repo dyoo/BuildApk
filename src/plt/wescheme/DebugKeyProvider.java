@@ -88,11 +88,10 @@ public class DebugKeyProvider {
     
     /**
      * Creates a provider using a keystore at the given location.
-     * <p/>The keystore, and a new random android debug key are created if they do not yet exist.
+     * <p/>The keystore.
      * <p/>Password for the store/key is <code>android</code>, and the key alias is
      * <code>AndroidDebugKey</code>.
-     * @param osKeyStorePath the OS path to the keystore, or <code>null</code> if the default one
-     * is to be used.
+     * @param osKeyStorePath the input stream to the keystore.
      * @param storeType an optional keystore type, or <code>null</code> if the default is to
      * be used.
      * @param output an optional {@link IKeyGenOutput} object to get the stdout and stderr
@@ -138,7 +137,7 @@ public class DebugKeyProvider {
     
     /**
      * Loads the debug key from the keystore.
-     * @param osKeyStorePath the OS path to the keystore.
+     * @param osKeyStorePath the input stream to the keystore.
      * @param storeType an optional keystore type, or <code>null</code> if the default is to
      * be used.
      * @return <code>true</code> if success, <code>false</code> if the keystore does not exist.
