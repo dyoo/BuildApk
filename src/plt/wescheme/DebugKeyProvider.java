@@ -21,12 +21,14 @@
 
 package plt.wescheme;
 
+
 import com.android.prefs.AndroidLocation;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -98,37 +100,15 @@ public class DebugKeyProvider {
      * @throws KeytoolException If the creation of the debug key failed.
      * @throws AndroidLocationException 
      */
-    public DebugKeyProvider(String osKeyStorePath, String storeType, IKeyGenOutput output)
+    public DebugKeyProvider(InputStream osKeyStore, String storeType, IKeyGenOutput output)
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
             UnrecoverableEntryException, IOException, KeytoolException, AndroidLocationException {
-        
-        if (osKeyStorePath == null) {
-            osKeyStorePath = getDefaultKeyStoreOsPath();
-        }
-        
-        if (loadKeyEntry(osKeyStorePath, storeType) == false) {
-            // create the store with the key
-            createNewStore(osKeyStorePath, storeType, output);
+                
+        if (loadKeyEntry(osKeyStore, storeType) == false) {
+	    throw new RuntimeException("Cannot load the key store");
         }
     }
 
-    /**
-     * Returns the OS path to the default debug keystore.
-     * 
-     * @return The OS path to the default debug keystore.
-     * @throws KeytoolException
-     * @throws AndroidLocationException
-     */
-    public static String getDefaultKeyStoreOsPath()
-            throws KeytoolException, AndroidLocationException {
-        String folder = AndroidLocation.getFolder();
-        if (folder == null) {
-            throw new KeytoolException("Failed to get HOME directory!\n");
-        }
-        String osKeyStorePath = folder + "debug.keystore";
-
-        return osKeyStorePath;
-    }
 
     /**
      * Returns the debug {@link PrivateKey} to use to sign applications for debug purpose.
@@ -163,15 +143,13 @@ public class DebugKeyProvider {
      * be used.
      * @return <code>true</code> if success, <code>false</code> if the keystore does not exist.
      */
-    private boolean loadKeyEntry(String osKeyStorePath, String storeType) throws KeyStoreException,
+    private boolean loadKeyEntry(InputStream osKeyStore, String storeType) throws KeyStoreException,
             NoSuchAlgorithmException, CertificateException, IOException,
             UnrecoverableEntryException {
         try {
             KeyStore keyStore = KeyStore.getInstance(
                     storeType != null ? storeType : KeyStore.getDefaultType());
-            FileInputStream fis = new FileInputStream(osKeyStorePath);
-            keyStore.load(fis, PASSWORD_CHAR);
-            fis.close();
+            keyStore.load(osKeyStore, PASSWORD_CHAR);
             mEntry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(
                     DEBUG_ALIAS, new KeyStore.PasswordProtection(PASSWORD_CHAR));
         } catch (FileNotFoundException e) {
@@ -181,27 +159,4 @@ public class DebugKeyProvider {
         return true;
     }
 
-    /**
-     * Creates a new store
-     * @param osKeyStorePath the location of the store
-     * @param storeType an optional keystore type, or <code>null</code> if the default is to
-     * be used.
-     * @param output an optional {@link IKeyGenOutput} object to get the stdout and stderr
-     * of the keytool process call.
-     * @throws KeyStoreException
-     * @throws NoSuchAlgorithmException
-     * @throws CertificateException
-     * @throws UnrecoverableEntryException
-     * @throws IOException
-     * @throws KeytoolException
-     */
-    private void createNewStore(String osKeyStorePath, String storeType, IKeyGenOutput output)
-            throws KeyStoreException, NoSuchAlgorithmException, CertificateException,
-            UnrecoverableEntryException, IOException, KeytoolException {
-        
-        if (KeystoreHelper.createNewStore(osKeyStorePath, storeType, PASSWORD_STRING, DEBUG_ALIAS,
-                PASSWORD_STRING, CERTIFICATE_DESC, 1 /* validity*/, output)) {
-            loadKeyEntry(osKeyStorePath, storeType);
-        }
-    }
 }
