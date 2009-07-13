@@ -12,8 +12,7 @@ public class BuildApk {
     SignedJarBuilder builder;
     DebugKeyProvider keyProvider;
 
-    public MakePhonegapApp(InputStream keyInputStream,
-			   OutputStream os) {
+    public BuildApk(InputStream keyInputStream, OutputStream os) {
 	try {
 	    this.keyProvider = new DebugKeyProvider(keyInputStream,
 						    null,
@@ -32,14 +31,20 @@ public class BuildApk {
 	this.builder.writeInputStream(is, jarPath);
     }
 
+
     public void addZipInputStream(InputStream is) throws IOException {
 	this.builder.writeZip(is, null);
     }
 
 
-    // build: -> void
-    // Finalize the building of the .apk file
-    public void build() {
+    // close: -> void
+    // Finalize the building of the .apk file.
+    public void close() {
+	try {
+	    this.builder.close();
+	} catch (Exception e) {
+	    throw new RuntimeException(e);
+	}
     }
 
 }
